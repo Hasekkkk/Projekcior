@@ -1,37 +1,43 @@
-import { useState, } from 'react';
+import { useState, useEffect} from 'react';
 
 export default function PokemonSlot({ index }) {
   const [pokemonName, setPokemonName] = useState('');
   const [pokemonData, setPokemonData] = useState(null);
   const [isError, setIsError] = useState(false);
 
-  // Funkcja komunikująca się z PokeAPI
-  const searchPokemon = async () => {
+  useEffect(() => {
+    // Jeśli pole jest puste, czyścimy dane
     if (!pokemonName.trim()) {
       setPokemonData(null);
+      setIsError(false);
       return;
     }
 
-    try {
-      setIsError(false);
-      // Pobieramy dane z zewnętrznego API
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);
-      
-      if (!response.ok) throw new Error('Nie znaleziono pokémona');
-      
-      const data = await response.json();
-      
-      // Zapisujemy tylko to, co nas interesuje (obrazek i typy)
-      setPokemonData({
-        name: data.name,
-        sprite: data.sprites.front_default,
-        types: data.types.map((t) => t.type.name), // Zwróci np. ["ghost", "poison"]
-      });
-    } catch (err) {
-      setPokemonData(null);
-      setIsError(true);
-    }
-  };
+    // Ustawiamy opóźnienie (Debouncing) - 500ms po zakończeniu pisania
+    const timeoutId = setTimeout(async () => {
+      try {
+        setIsError(false);
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);
+        
+        if (!response.ok) throw new Error('Nie znaleziono pokémona');
+        
+        const data = await response.json();
+        
+        setPokemonData({
+          name: data.name,
+          sprite: data.sprites.front_default,
+          types: data.types.map((t) => t.type.name),
+        });
+      } catch (err) {
+        setPokemonData(null);
+        setIsError(true); // Wyświetli błąd jeśli wpiszesz np. "gengarrr"
+      }
+    }, 500); // 500 milisekund opóźnienia
+
+    // Cleanup: jeśli użytkownik wciśnie kolejną literę przed upływem 500ms, anulujemy poprzednie zapytanie
+    return () => clearTimeout(timeoutId);
+    
+  }, [pokemonName]); // Ta tablica na końcu mówi: wywołaj ten efekt tylko, gdy zmieni się pokemonName
 
   return (
     <div className="pokemon-slot" style={styles.slot}>
@@ -50,7 +56,6 @@ export default function PokemonSlot({ index }) {
         style={styles.input}
         value={pokemonName}
         onChange={(e) => setPokemonName(e.target.value)}
-        onBlur={searchPokemon} // Wywołuje funkcję po opuszczeniu pola tekstowego
       />
       
       {/* Komunikaty */}
