@@ -1,0 +1,9 @@
+CREATE DATABASE IF NOT EXISTS pokemon_builder_db;
+USE pokemon_builder_db;
+
+CREATE TABLE IF NOT EXISTS teams (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    team_data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
