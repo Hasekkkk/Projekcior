@@ -1,37 +1,56 @@
+import { useContext } from 'react';
 import PokemonSlot from './components/PokemonSlot';
 import CoverageTable from './components/CoverageTable';
+import { TeamContext } from './context/TeamContext';
 
 function App() {
-  // Generujemy tablicę [1, 2, 3, 4, 5, 6] dla sześciu slotów
   const slots = [1, 2, 3, 4, 5, 6];
+  
+  // Pobieramy nowe dane z naszego magazynu (TeamContext)
+  const { teamName, setTeamName, saveTeamLocal, isOnline } = useContext(TeamContext);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       
-      <header style={{ marginBottom: '20px' }}>
+      {/* Pasek Statusu Internetu */}
+      <div style={{ 
+        padding: '10px', 
+        marginBottom: '20px', 
+        backgroundColor: isOnline ? '#d4edda' : '#f8d7da', 
+        color: isOnline ? '#155724' : '#721c24',
+        borderRadius: '5px',
+        fontWeight: 'bold',
+        textAlign: 'center'
+      }}>
+        Status połączenia: {isOnline ? '🟢 ONLINE (Gotowy do synchronizacji)' : '🔴 OFFLINE (Dane zapisywane lokalnie)'}
+      </div>
+
+      <header style={{ marginBottom: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
         <h1>Pokémon Team Builder</h1>
         <input 
           type="text" 
-          placeholder="Nazwa Twojej drużyny..." 
-          style={{ padding: '10px', width: '300px', marginTop: '10px' }}
+          placeholder="Nazwa Twojej drużyny (Wymagane)..." 
+          style={{ padding: '10px', width: '300px' }}
+          value={teamName}
+          onChange={(e) => setTeamName(e.target.value)} // Formularz kontrolowany
         />
+        <button 
+          onClick={saveTeamLocal}
+          style={{ padding: '10px 20px', backgroundColor: '#3498db', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          💾 Zapisz Drużynę
+        </button>
       </header>
 
-      {/* Główny grid aplikacji */}
       <main style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-        
-        {/* Lewa kolumna: Sloty na 6 pokemonów */}
         <section style={{ flex: '1' }}>
           {slots.map((num) => (
             <PokemonSlot key={num} index={num} />
           ))}
         </section>
-
-        {/* Prawa kolumna: Tabela Coverage */}
-        <aside style={{ width: '400px' }}>
+        <aside style={{ width: '450px' }}>
           <CoverageTable />
         </aside>
-
       </main>
 
     </div>
